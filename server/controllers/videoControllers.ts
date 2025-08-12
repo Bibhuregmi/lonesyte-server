@@ -10,7 +10,11 @@ export const uploadVideo = async(req: Request, res: Response) => {
         if(!req.file){
             return res.status(400).json({message: "Can't upload a empty file"})
         }
-        const fileName = `${Date.now()}-${req.file.originalname}`
+        if (!req.user) {
+            return res.status(401).json({ message: "User not authenticated" });
+        }
+        const userId = req.user.id; 
+        const fileName = `users/${userId}/videos/${Date.now()}-${req.file.originalname}`
         const bucketName = process.env.AWS_BUCKET_NAME!; 
 
         //Uploading to S3
@@ -23,6 +27,7 @@ export const uploadVideo = async(req: Request, res: Response) => {
 
         //Saving Metadata to Supabase
         const {error} = await supabase.from("videos").insert({
+            user_id: userId,
             title: req.body.title || null,
             description: req.body.description || null,
             video_url: fileName,
@@ -39,27 +44,35 @@ export const uploadVideo = async(req: Request, res: Response) => {
 
 export const getVideo = async(req: Request, res: Response) => {
     try{
-        const videoId = req.params.id; 
-        const {data, error} = await supabase.from("videos").select("*").eq("id", videoId).single<VideoMetadata>();
+        if(!req.user){
+            return res.status(401).json({message: "User not authenticated"})
+        }
+        const userId = req.user.id;
+        const {data, error} = await supabase.from("videos").select("*").eq("user_id", userId).order('created_at', {ascending: true});
         if(error){
             return res.status(404).json({message: "Video metadata not found"})
         }
-        if(!data){
+        if(!data || data.length === 0){
             return res.status(404).json({message: "Video not available"})
         }
         const bucketName = process.env.AWS_BUCKET_NAME!;
         //signed url to access the file
-        const command = new GetObjectCommand({
-            Bucket: bucketName,
-            Key: data.video_url, 
-        })
-        const url = await getSignedUrl(s3, command, {expiresIn: 3600}) //url expires in 1hour 
-        //returning metadata and signed url
+        const videosWithURL = await Promise.all(data.map(async (video: VideoMetadata) => {
+            const command = new GetObjectCommand({
+                Bucket: bucketName,
+                Key: video.video_url, 
+            })
+            const url = await getSignedUrl(s3, command, {expiresIn: 3600}) //url expires in 1hour 
+            //returning metadata and signed url
+            return {
+                ...video,
+                url
+            }
+        }))
         return res.status(200).json({
-            metadata: data,
-            signedUrl: url
-        }) 
-    }catch(error){
+            videos: videosWithURL
+        });
+    } catch(error){
         console.error("Get Video Eroor:", error)
         return res.status(500).json({message: 'Failed to get video'})
     }

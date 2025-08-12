@@ -1,6 +1,6 @@
 export interface VideoMetadata{
     id?: string; 
-    user_id?: string | null; // optional, if user authentication is implemented
+    user_id?: string;
     title: string | null;
     description: string | null;
     video_url: string;

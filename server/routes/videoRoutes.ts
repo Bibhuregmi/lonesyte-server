@@ -4,6 +4,6 @@ import { authMiddleware, upload } from "../middlewares/middleware";
 const router = Router(); 
 
 router.post('/upload', authMiddleware, upload.single("video") ,uploadVideo )
-router.get('/:id', authMiddleware, getVideo)
+router.get('/get-video', authMiddleware, getVideo)
 
 export default router; 
