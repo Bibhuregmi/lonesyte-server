@@ -1,0 +1,34 @@
+{
+  "name": "lonesyte-server",
+  "version": "1.0.0",
+  "main": "server/server.ts",
+  "scripts": {
+    "dev": "nodemon --watch server --ext ts --exec tsx server/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.864.0",
+    "@aws-sdk/s3-request-presigner": "^3.864.0",
+    "@supabase/supabase-js": "^2.49.4",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.2.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2"
+  },
+  "private": true,
+  "description": "A Node.js backend for video upload and retrieval using AWS S3 and Supabase.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lonesyteRepo/lonesyte-server.git"
+  },
+  "license": "ISC"
+}
