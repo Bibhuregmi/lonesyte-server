@@ -1,10 +1,16 @@
 import { Request, Response, NextFunction } from "express";
-import multer from "multer";
 import { supabase } from "../utils/supabase";
+import {uploadConfig, multerErrorHandler} from "../config/multerConfig"
 
-const storage = multer.memoryStorage();
-export const upload = multer({storage})
+export const upload = uploadConfig;
 
+export const handleUploadError = (err: any, req: Request, res: Response, next: NextFunction) => {
+    if (err) {
+        const error = multerErrorHandler(err);
+        return res.status(error.status).json({ message: error.message });
+    }
+    next();
+};
 // Middleware to authenticate user using Supabase
 export const authMiddleware = async (req:Request, res:Response, next: NextFunction) => {
     const token = req.headers.authorization?.split(" ")[1];
