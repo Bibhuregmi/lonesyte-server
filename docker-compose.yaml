@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  lonesyte-server:
+    build: .
+    container_name: lonesyte-server
+    restart: always
+    ports:
+      - "80:3000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
